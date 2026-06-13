@@ -4,6 +4,8 @@
   <base target="_top">
   <meta charset="UTF-8">
   <title>Dashboard</title>
+  <!-- Font Awesome: agar kolom icon bisa diisi class seperti "fa-solid fa-house" -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box;
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
@@ -159,7 +161,16 @@
       <div class="menu-grid">
         <? for (var i = 0; i < menus.length; i++) { ?>
           <a class="menu-card" href="<?= menus[i].url ?>" target="_blank">
-            <div class="menu-icon"><?= menus[i].icon ?></div>
+            <? var ic = String(menus[i].icon || '').trim(); ?>
+            <div class="menu-icon">
+              <? if (ic.indexOf('http') === 0) { ?>
+                <img src="<?= ic ?>" alt="icon" style="width:30px;height:30px;object-fit:contain;">
+              <? } else if (ic.indexOf('fa-') !== -1) { ?>
+                <i class="<?= ic ?>"></i>
+              <? } else { ?>
+                <?!= ic ?>
+              <? } ?>
+            </div>
             <h3><?= menus[i].label ?></h3>
             <div class="menu-arrow">></div>
           </a>
