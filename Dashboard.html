@@ -154,7 +154,8 @@
     <div class="header-right">
       <div class="user-badge">
         <span><?= userData.nama ?></span>
-        <span class="role-tag <?= userData.role === 'Admin' ? 'role-admin' : 'role-user' ?>"><?= userData.role ?></span>
+        <? var roleClass = (userData.role === 'Admin') ? 'role-admin' : 'role-user'; ?>
+        <span class="role-tag <?= roleClass ?>"><?= userData.role ?></span>
       </div>
       <? if (userData.role === 'Admin') { ?>
         <button class="btn-admin-panel" onclick="openAdminPanel()">Kelola Akses</button>
