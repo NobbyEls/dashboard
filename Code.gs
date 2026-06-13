@@ -10,9 +10,34 @@
 const SHEET_ID = '11kal0trMILl7jmmQwuboFU9adr634ljIGvdAvDCx4a8';
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 jam
 
-// URL logo yang tampil di tengah dashboard.
-// Ganti dengan link gambar logo kamu (PNG/JPG/SVG). Kosongkan ('') untuk menyembunyikan.
-const LOGO_URL = 'https://lh3.googleusercontent.com/d/1TKHbkFxSglOrqsWhOFfN9Xqa_-BiBIw7';
+// Logo yang tampil di tengah dashboard.
+// Opsi 1 (PALING ANDAL): isi LOGO_FILE_ID dengan ID file logo di Google Drive.
+//   Server akan membaca file & menampilkannya langsung (jalan walau file privat).
+// Opsi 2: kosongkan LOGO_FILE_ID dan isi LOGO_URL dengan link gambar publik.
+// Kosongkan keduanya ('') untuk menyembunyikan logo.
+const LOGO_FILE_ID = '1TKHbkFxSglOrqsWhOFfN9Xqa_-BiBIw7';
+const LOGO_URL = '';
+
+/** Mengembalikan sumber gambar logo untuk dipakai di <img src>. */
+function getLogoSrc() {
+  if (LOGO_FILE_ID) {
+    try {
+      const cache = CacheService.getScriptCache();
+      const cached = cache.get('logo_datauri');
+      if (cached) return cached;
+
+      const blob = DriveApp.getFileById(LOGO_FILE_ID).getBlob();
+      const dataUri = 'data:' + blob.getContentType() + ';base64,' +
+        Utilities.base64Encode(blob.getBytes());
+
+      if (dataUri.length < 95000) cache.put('logo_datauri', dataUri, 21600);
+      return dataUri;
+    } catch (e) {
+      // gagal baca Drive -> jatuh ke LOGO_URL di bawah
+    }
+  }
+  return LOGO_URL;
+}
 
 /* ============ ROUTING ============ */
 
@@ -53,7 +78,7 @@ function serveDashboard(session, token) {
   template.userData = session;
   template.menus = getMenusForRole(session.role);
   template.token = token;
-  template.logoUrl = LOGO_URL;
+  template.logoUrl = getLogoSrc();
 
   return template.evaluate()
     .setTitle('Dashboard')
