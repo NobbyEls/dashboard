@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      background-size: 400% 400%; animation: gradientShift 20s ease infinite; position: relative;
+    }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .blob { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.4; }
+    .blob1 { width: 350px; height: 350px; background: #ff6ec4; top: -120px; left: -100px; }
+    .blob2 { width: 400px; height: 400px; background: #4facfe; bottom: -150px; right: -120px; }
+    .header {
+      position: relative; z-index: 10; display: flex; justify-content: space-between;
+      align-items: center; padding: 20px 40px; background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .header-left .logo {
+      width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+      font-weight: bold; color: #fff; border: 1px solid rgba(255,255,255,0.25);
+    }
+    .header-left h2 { color: #fff; font-size: 18px; font-weight: 600; }
+    .header-left p { color: rgba(255,255,255,0.7); font-size: 12px; }
+    .header-right { display: flex; align-items: center; gap: 16px; }
+    .user-badge {
+      display: flex; align-items: center; gap: 10px; padding: 8px 16px;
+      background: rgba(255,255,255,0.12); border-radius: 50px;
+      border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 13px;
+    }
+    .role-tag { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+    .role-admin { background: rgba(255, 110, 196, 0.3); color: #fff; border: 1px solid rgba(255,110,196,0.5); }
+    .role-user { background: rgba(79, 172, 254, 0.3); color: #fff; border: 1px solid rgba(79,172,254,0.5); }
+    .btn-logout, .btn-admin-panel {
+      padding: 9px 20px; border-radius: 50px; font-size: 13px; font-weight: 500;
+      cursor: pointer; border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255, 255, 255, 0.15); color: #fff;
+    }
+    .btn-admin-panel { background: rgba(255,255,255,0.92); color: #5b3fd4; font-weight: 600; border: none; }
+    .container { position: relative; z-index: 5; max-width: 1100px; margin: 0 auto; padding: 40px 30px; }
+    .welcome-title { color: #fff; font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+    .welcome-sub { color: rgba(255,255,255,0.75); font-size: 14px; margin-bottom: 35px; }
+    .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 22px; }
+    .menu-card {
+      background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; padding: 28px 24px;
+      text-decoration: none; display: flex; flex-direction: column; align-items: flex-start; gap: 14px;
+    }
+    .menu-card:hover { background: rgba(255, 255, 255, 0.2); }
+    .menu-icon {
+      width: 52px; height: 52px; border-radius: 14px; background: rgba(255,255,255,0.18);
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+      font-weight: bold; color: #fff; border: 1px solid rgba(255,255,255,0.2);
+    }
+    .menu-card h3 { color: #fff; font-size: 16px; font-weight: 600; }
+    .menu-card .menu-arrow { margin-top: auto; align-self: flex-end; color: rgba(255,255,255,0.6); font-size: 20px; }
+    .empty-state { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.7); }
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(20, 10, 40, 0.6); backdrop-filter: blur(6px); z-index: 100;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+      width: 100%; max-width: 680px; max-height: 85vh; overflow-y: auto;
+      background: rgba(255,255,255,0.18); backdrop-filter: blur(25px);
+      border: 1px solid rgba(255,255,255,0.25); border-radius: 24px; padding: 30px;
+    }
+    .modal-box h2 { color: #fff; margin-bottom: 20px; font-size: 22px; }
+    .access-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 14px 16px; background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15); border-radius: 14px; margin-bottom: 10px;
+    }
+    .access-row .menu-info { display: flex; align-items: center; gap: 10px; color: #fff; font-size: 14px; }
+    .access-controls { display: flex; gap: 8px; }
+    .toggle-chip {
+      padding: 6px 14px; border-radius: 50px; font-size: 12px; font-weight: 600; cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7);
+    }
+    .toggle-chip.active { background: #fff; color: #5b3fd4; border-color: #fff; }
+    .delete-chip {
+      padding: 6px 12px; border-radius: 50px; font-size: 12px; cursor: pointer;
+      border: 1px solid rgba(255,90,90,0.4); background: rgba(255,80,80,0.15); color: #fff;
+    }
+    .add-menu-form { margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); }
+    .add-menu-form h3 { color: #fff; font-size: 15px; margin-bottom: 14px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .form-row input {
+      padding: 12px 14px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 10px; color: #fff; font-size: 13px; outline: none;
+    }
+    .form-row input::placeholder { color: rgba(255,255,255,0.5); }
+    .full-width { grid-column: span 2; }
+    .btn-add {
+      width: 100%; padding: 12px; background: rgba(255,255,255,0.9); border: none;
+      border-radius: 10px; color: #5b3fd4; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 6px;
+    }
+    .btn-close-modal {
+      width: 100%; padding: 12px; margin-top: 18px; background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.25); border-radius: 10px; color: #fff;
+      font-weight: 500; font-size: 14px; cursor: pointer;
+    }
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; padding: 14px 22px;
+      background: rgba(40, 200, 120, 0.9); color: #fff; border-radius: 12px;
+      font-size: 13px; font-weight: 500; z-index: 200; display: none;
+    }
+    @media (max-width: 600px) {
+      .header { padding: 16px 18px; }
+      .container { padding: 25px 16px; }
+      .welcome-title { font-size: 22px; }
+      .form-row { grid-template-columns: 1fr; }
+      .full-width { grid-column: span 1; }
+      .header-right { flex-wrap: wrap; justify-content: flex-end; }
+    }
+  </style>
+</head>
+<body>
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">DB</div>
+      <div>
+        <h2>Dashboard</h2>
+        <p>Pusat Aplikasi dan Tools</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="user-badge">
+        <span><?= userData.nama ?></span>
+        <span class="role-tag <?= userData.role === 'Admin' ? 'role-admin' : 'role-user' ?>"><?= userData.role ?></span>
+      </div>
+      <? if (userData.role === 'Admin') { ?>
+        <button class="btn-admin-panel" onclick="openAdminPanel()">Kelola Akses</button>
+      <? } ?>
+      <button class="btn-logout" onclick="doLogout()">Keluar</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1 class="welcome-title">Halo, <?= userData.nama ?></h1>
+    <p class="welcome-sub">Pilih aplikasi yang ingin kamu akses</p>
+
+    <? if (menus.length > 0) { ?>
+      <div class="menu-grid">
+        <? for (var i = 0; i < menus.length; i++) { ?>
+          <a class="menu-card" href="<?= menus[i].url ?>" target="_blank">
+            <div class="menu-icon"><?= menus[i].icon ?></div>
+            <h3><?= menus[i].label ?></h3>
+            <div class="menu-arrow">></div>
+          </a>
+        <? } ?>
+      </div>
+    <? } else { ?>
+      <div class="empty-state">
+        <p>Belum ada aplikasi yang tersedia untuk role kamu.</p>
+      </div>
+    <? } ?>
+  </div>
+
+  <? if (userData.role === 'Admin') { ?>
+  <div class="modal-overlay" id="adminModal">
+    <div class="modal-box">
+      <h2>Kelola Hak Akses Menu</h2>
+      <div id="accessList">
+        <p style="color: rgba(255,255,255,0.7); font-size: 13px;">Memuat data...</p>
+      </div>
+
+      <div class="add-menu-form">
+        <h3>Tambah Menu Baru</h3>
+        <div class="form-row">
+          <input type="text" id="newLabel" placeholder="Nama menu">
+          <input type="text" id="newIcon" placeholder="Icon (teks singkat)">
+        </div>
+        <div class="form-row">
+          <input type="text" id="newUrl" class="full-width" placeholder="URL web app">
+        </div>
+        <div class="form-row">
+          <input type="text" id="newRole" class="full-width" placeholder="Role akses (Admin,User atau All)">
+        </div>
+        <button class="btn-add" onclick="addNewMenu()">Tambah Menu</button>
+      </div>
+
+      <button class="btn-close-modal" onclick="closeAdminPanel()">Tutup</button>
+    </div>
+  </div>
+  <? } ?>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Token dioper dari server (aman, tidak bergantung pada URL iframe)
+    var APP_TOKEN = '<?= token ?>';
+
+    function getToken() { return APP_TOKEN; }
+
+    function doLogout() {
+      google.script.run
+        .withSuccessHandler(function () {
+          google.script.run
+            .withSuccessHandler(function (url) { window.top.location.href = url; })
+            .getScriptUrl();
+        })
+        .logout(getToken());
+    }
+
+    function showToast(msg) {
+      var toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      setTimeout(function () { toast.style.display = 'none'; }, 2500);
+    }
+
+    function openAdminPanel() {
+      document.getElementById('adminModal').classList.add('active');
+      loadAccessList();
+    }
+
+    function closeAdminPanel() {
+      document.getElementById('adminModal').classList.remove('active');
+    }
+
+    function loadAccessList() {
+      google.script.run
+        .withSuccessHandler(renderAccessList)
+        .withFailureHandler(function (err) { showToast('Gagal memuat: ' + err.message); })
+        .getAllMenus(getToken());
+    }
+
+    function renderAccessList(result) {
+      var container = document.getElementById('accessList');
+      if (!result.success) {
+        container.innerHTML = '<p style="color:#fff;">' + result.message + '</p>';
+        return;
+      }
+      if (result.menus.length === 0) {
+        container.innerHTML = '<p style="color: rgba(255,255,255,0.7); font-size: 13px;">Belum ada menu.</p>';
+        return;
+      }
+
+      var html = '';
+      result.menus.forEach(function (menu) {
+        var roles = String(menu.roleAccess || '').split(',').map(function (r) { return r.trim(); });
+        var isAdmin = roles.indexOf('Admin') !== -1 || roles.indexOf('All') !== -1;
+        var isUser = roles.indexOf('User') !== -1 || roles.indexOf('All') !== -1;
+
+        html += '<div class="access-row">';
+        html += '  <div class="menu-info"><span>' + menu.label + '</span></div>';
+        html += '  <div class="access-controls">';
+        html += '    <span class="toggle-chip ' + (isAdmin ? 'active' : '') + '" onclick="toggleAccess(' + menu.rowIndex + ', this)">Admin</span>';
+        html += '    <span class="toggle-chip ' + (isUser ? 'active' : '') + '" onclick="toggleAccess(' + menu.rowIndex + ', this)">User</span>';
+        html += '    <span class="delete-chip" onclick="removeMenu(' + menu.rowIndex + ')">Hapus</span>';
+        html += '  </div>';
+        html += '</div>';
+      });
+
+      container.innerHTML = html;
+    }
+
+    function toggleAccess(rowIndex, el) {
+      el.classList.toggle('active');
+
+      var controls = el.parentElement;
+      var chips = controls.querySelectorAll('.toggle-chip');
+      var activeRoles = [];
+      chips.forEach(function (chip) {
+        if (chip.classList.contains('active')) {
+          activeRoles.push(chip.textContent.trim());
+        }
+      });
+
+      var roleString = activeRoles.join(',');
+
+      google.script.run
+        .withSuccessHandler(function () { showToast('Akses diperbarui'); })
+        .withFailureHandler(function (err) { showToast('Gagal: ' + err.message); })
+        .updateMenuAccess(getToken(), rowIndex, roleString);
+    }
+
+    function removeMenu(rowIndex) {
+      if (!confirm('Hapus menu ini?')) return;
+      google.script.run
+        .withSuccessHandler(function () {
+          showToast('Menu dihapus');
+          loadAccessList();
+        })
+        .withFailureHandler(function (err) { showToast('Gagal: ' + err.message); })
+        .deleteMenu(getToken(), rowIndex);
+    }
+
+    function addNewMenu() {
+      var label = document.getElementById('newLabel').value.trim();
+      var icon = document.getElementById('newIcon').value.trim();
+      var url = document.getElementById('newUrl').value.trim();
+      var role = document.getElementById('newRole').value.trim();
+
+      if (!label || !url || !role) {
+        showToast('Lengkapi semua field wajib');
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function () {
+          showToast('Menu ditambahkan, refresh halaman untuk melihat');
+          document.getElementById('newLabel').value = '';
+          document.getElementById('newIcon').value = '';
+          document.getElementById('newUrl').value = '';
+          document.getElementById('newRole').value = '';
+          loadAccessList();
+        })
+        .withFailureHandler(function (err) { showToast('Gagal: ' + err.message); })
+        .addMenu(getToken(), label, icon || '-', url, role);
+    }
+  </script>
+</body>
+</html>

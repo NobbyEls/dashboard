@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+
+    body {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      background-size: 400% 400%; animation: gradientShift 15s ease infinite;
+      position: relative; overflow: hidden;
+    }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .blob { position: absolute; border-radius: 50%; filter: blur(60px);
+            opacity: 0.5; animation: float 12s ease-in-out infinite; }
+    .blob1 { width: 300px; height: 300px; background: #ff6ec4; top: -100px; left: -80px; }
+    .blob2 { width: 350px; height: 350px; background: #4facfe; bottom: -120px; right: -100px; animation-delay: 4s; }
+    .blob3 { width: 250px; height: 250px; background: #a18cd1; top: 40%; right: 10%; animation-delay: 8s; }
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(40px, -40px) scale(1.1); }
+    }
+    .login-card {
+      position: relative; z-index: 10; width: 100%; max-width: 400px; margin: 20px;
+      padding: 40px 35px; background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(20px);
+      border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.3);
+    }
+    .logo-circle {
+      width: 70px; height: 70px; margin: 0 auto 20px; border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2); display: flex; align-items: center;
+      justify-content: center; font-size: 28px; border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff; font-weight: bold;
+    }
+    .login-card h1 { text-align: center; color: #fff; font-size: 26px; font-weight: 600; margin-bottom: 6px; }
+    .login-card .subtitle { text-align: center; color: rgba(255,255,255,0.75); font-size: 14px; margin-bottom: 30px; }
+    .input-group { margin-bottom: 18px; }
+    .input-group label { display: block; color: rgba(255,255,255,0.85); font-size: 13px; margin-bottom: 6px; font-weight: 500; }
+    .input-group input {
+      width: 100%; padding: 14px 16px; background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 12px; color: #fff;
+      font-size: 15px; outline: none;
+    }
+    .input-group input::placeholder { color: rgba(255,255,255,0.5); }
+    .input-group input:focus { background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.5); }
+    .btn-login {
+      width: 100%; padding: 14px; margin-top: 8px;
+      background: linear-gradient(135deg, #ffffff 0%, #f0f0ff 100%); border: none;
+      border-radius: 12px; color: #5b3fd4; font-size: 16px; font-weight: 600; cursor: pointer;
+    }
+    .btn-login:hover { transform: translateY(-2px); }
+    .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
+    .error-message {
+      margin-top: 14px; padding: 12px 14px; background: rgba(255, 80, 80, 0.2);
+      border: 1px solid rgba(255, 100, 100, 0.4); border-radius: 10px; color: #fff;
+      font-size: 13px; text-align: center; display: none;
+    }
+    .notice-message {
+      margin-bottom: 18px; padding: 10px 14px; background: rgba(255, 200, 80, 0.2);
+      border: 1px solid rgba(255, 200, 100, 0.4); border-radius: 10px; color: #fff;
+      font-size: 13px; text-align: center;
+    }
+    .footer-text { margin-top: 24px; text-align: center; color: rgba(255,255,255,0.6); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+
+  <div class="login-card">
+    <div class="logo-circle">DB</div>
+    <h1>Welcome Back</h1>
+    <p class="subtitle">Login untuk mengakses dashboard</p>
+
+    <? if (notice) { ?>
+      <div class="notice-message"><?= notice ?></div>
+    <? } ?>
+
+    <form id="loginForm">
+      <div class="input-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="Masukkan username" required>
+      </div>
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Masukkan password" required>
+      </div>
+      <button type="submit" class="btn-login" id="btnLogin">Masuk</button>
+      <div class="error-message" id="errorMsg"></div>
+    </form>
+
+    <p class="footer-text">Dashboard System</p>
+  </div>
+
+  <script>
+    var form = document.getElementById('loginForm');
+    var btnLogin = document.getElementById('btnLogin');
+    var errorMsg = document.getElementById('errorMsg');
+
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorMsg.style.display = 'block';
+      btnLogin.disabled = false;
+      btnLogin.textContent = 'Masuk';
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      var username = document.getElementById('username').value;
+      var password = document.getElementById('password').value;
+
+      errorMsg.style.display = 'none';
+      btnLogin.disabled = true;
+      btnLogin.textContent = 'Memproses...';
+
+      google.script.run
+        .withSuccessHandler(function (result) {
+          if (result.success) {
+            // Ambil URL web app yang BENAR dari server, lalu redirect.
+            google.script.run
+              .withSuccessHandler(function (url) {
+                window.top.location.href = url + '?token=' + result.token;
+              })
+              .withFailureHandler(function (err) {
+                showError('Error URL: ' + err.message);
+              })
+              .getScriptUrl();
+          } else {
+            showError(result.message || 'Login gagal');
+          }
+        })
+        .withFailureHandler(function (err) {
+          showError('Error: ' + err.message);
+        })
+        .login(username, password);
+    });
+  </script>
+</body>
+</html>
