@@ -12,7 +12,7 @@ const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 jam
 
 // URL logo yang tampil di tengah dashboard.
 // Ganti dengan link gambar logo kamu (PNG/JPG/SVG). Kosongkan ('') untuk menyembunyikan.
-const LOGO_URL = 'https://drive.usercontent.google.com/download?id=1TKHbkFxSglOrqsWhOFfN9Xqa_-BiBIw7&export=view&authuser=0';
+const LOGO_URL = 'https://lh3.googleusercontent.com/d/1TKHbkFxSglOrqsWhOFfN9Xqa_-BiBIw7';
 
 /* ============ ROUTING ============ */
 
