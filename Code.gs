@@ -10,6 +10,10 @@
 const SHEET_ID = '11kal0trMILl7jmmQwuboFU9adr634ljIGvdAvDCx4a8';
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 jam
 
+// URL logo yang tampil di tengah dashboard.
+// Ganti dengan link gambar logo kamu (PNG/JPG/SVG). Kosongkan ('') untuk menyembunyikan.
+const LOGO_URL = 'https://via.placeholder.com/200x80?text=LOGO';
+
 /* ============ ROUTING ============ */
 
 function doGet(e) {
@@ -49,6 +53,7 @@ function serveDashboard(session, token) {
   template.userData = session;
   template.menus = getMenusForRole(session.role);
   template.token = token;
+  template.logoUrl = LOGO_URL;
 
   return template.evaluate()
     .setTitle('Dashboard')
