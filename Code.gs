@@ -52,6 +52,44 @@ function getLoginLogoSrc() {
   return driveImageSrc(LOGIN_LOGO_FILE_ID, LOGIN_LOGO_URL, 'login_logo_datauri');
 }
 
+/**
+ * DEBUG: jalankan fungsi ini langsung dari editor Apps Script (pilih debugLogo > Run),
+ * lalu lihat menu "Execution log" untuk hasilnya. Beri tahu saya isi log-nya.
+ */
+function debugLogo() {
+  const ids = { dashboard: LOGO_FILE_ID, login: LOGIN_LOGO_FILE_ID };
+  const result = {};
+
+  Object.keys(ids).forEach(function (key) {
+    const fileId = ids[key];
+    const info = { fileId: fileId };
+    try {
+      const file = DriveApp.getFileById(fileId);
+      const blob = file.getBlob();
+      const bytes = blob.getBytes();
+      const dataUri = 'data:' + blob.getContentType() + ';base64,' + Utilities.base64Encode(bytes);
+      info.name = file.getName();
+      info.contentType = blob.getContentType();
+      info.sizeKB = Math.round(bytes.length / 1024);
+      info.dataUriLength = dataUri.length;
+      info.cached = dataUri.length < 95000;
+      info.ok = true;
+    } catch (e) {
+      info.ok = false;
+      info.error = e.message;
+    }
+    result[key] = info;
+  });
+
+  // bersihkan cache supaya logo dibaca ulang setelah perbaikan
+  try {
+    CacheService.getScriptCache().removeAll(['logo_datauri', 'login_logo_datauri']);
+  } catch (e) {}
+
+  Logger.log(JSON.stringify(result, null, 2));
+  return result;
+}
+
 /* ============ ROUTING ============ */
 
 function doGet(e) {
