@@ -9,7 +9,7 @@
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
 
     body {
-      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
       background-size: 400% 400%; animation: gradientShift 15s ease infinite;
       position: relative; overflow: hidden;
@@ -51,7 +51,7 @@
     .input-group input {
       width: 100%; padding: 14px 16px; background: rgba(255, 255, 255, 0.12);
       border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 12px; color: #fff;
-      font-size: 15px; outline: none;
+      font-size: 16px; outline: none;
     }
     .input-group input::placeholder { color: rgba(255,255,255,0.5); }
     .input-group input:focus { background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.5); }
@@ -73,6 +73,14 @@
       font-size: 13px; text-align: center;
     }
     .footer-text { margin-top: 24px; text-align: center; color: rgba(255,255,255,0.6); font-size: 12px; }
+
+    @media (max-width: 480px) {
+      .login-card { padding: 30px 22px; margin: 16px; border-radius: 20px; }
+      .login-card h1 { font-size: 23px; }
+      .login-card .subtitle { margin-bottom: 24px; }
+      .btn-login { min-height: 50px; }
+      .blob { filter: blur(45px); }
+    }
   </style>
 </head>
 <body>
