@@ -17,11 +17,11 @@ const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 jam
 
 // Logo di tengah Dashboard
 const LOGO_FILE_ID = '1TKHbkFxSglOrqsWhOFfN9Xqa_-BiBIw7';
-const LOGO_URL = '';
+const LOGO_URL = 'https://lh3.googleusercontent.com/d/1TKHbkFxSglOrqsWhOFfN9Xqa_-BiBIw7';
 
 // Logo di halaman Login
 const LOGIN_LOGO_FILE_ID = '1ZMcyX0VA5Og0GaDDWGKaW5Bv9FhrDUee';
-const LOGIN_LOGO_URL = '';
+const LOGIN_LOGO_URL = 'https://lh3.googleusercontent.com/d/1ZMcyX0VA5Og0GaDDWGKaW5Bv9FhrDUee';
 
 /** Helper: ambil gambar dari Drive sebagai data URI (dengan cache). */
 function driveImageSrc(fileId, fallbackUrl, cacheKey) {
