@@ -11,100 +11,10 @@ const SHEET_ID = '11kal0trMILl7jmmQwuboFU9adr634ljIGvdAvDCx4a8';
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 jam
 
 // ===== LOGO =====
-// Logo dibaca langsung dari Google Drive oleh server (jalan walau file privat).
-// Isi *_FILE_ID dengan ID file di Drive. Sebagai cadangan bisa pakai *_URL (link publik).
-// Kosongkan ('') untuk menyembunyikan logo.
-
-// Logo di tengah Dashboard
-const LOGO_FILE_ID = '1TKHbkFxSglOrqsWhOFfN9Xqa_-BiBIw7';
-const LOGO_URL = 'https://lh3.googleusercontent.com/d/1TKHbkFxSglOrqsWhOFfN9Xqa_-BiBIw7';
-
-// Logo di halaman Login
-const LOGIN_LOGO_FILE_ID = '1ZMcyX0VA5Og0GaDDWGKaW5Bv9FhrDUee';
-const LOGIN_LOGO_URL = 'https://lh3.googleusercontent.com/d/1ZMcyX0VA5Og0GaDDWGKaW5Bv9FhrDUee';
-
-/** Helper: ambil gambar dari Drive sebagai data URI (dengan cache). */
-function driveImageSrc(fileId, fallbackUrl, cacheKey) {
-  if (fileId) {
-    const cache = CacheService.getScriptCache();
-    const cached = cache.get(cacheKey);
-    if (cached) return cached;
-
-    let dataUri = null;
-
-    // 1) Coba via DriveApp (file milik / di-share ke akun yang menjalankan script)
-    try {
-      const blob = DriveApp.getFileById(fileId).getBlob();
-      dataUri = 'data:' + blob.getContentType() + ';base64,' + Utilities.base64Encode(blob.getBytes());
-    } catch (e1) {
-      // 2) Fallback: ambil via URL publik (file harus "Anyone with the link")
-      try {
-        const resp = UrlFetchApp.fetch('https://lh3.googleusercontent.com/d/' + fileId,
-          { muteHttpExceptions: true });
-        if (resp.getResponseCode() === 200) {
-          const blob = resp.getBlob();
-          dataUri = 'data:' + blob.getContentType() + ';base64,' + Utilities.base64Encode(blob.getBytes());
-        }
-      } catch (e2) {
-        // gagal juga -> fallbackUrl
-      }
-    }
-
-    if (dataUri) {
-      if (dataUri.length < 95000) cache.put(cacheKey, dataUri, 21600);
-      return dataUri;
-    }
-  }
-  return fallbackUrl;
-}
-
-function getLogoSrc() {
-  return driveImageSrc(LOGO_FILE_ID, LOGO_URL, 'logo_datauri');
-}
-
-function getLoginLogoSrc() {
-  return driveImageSrc(LOGIN_LOGO_FILE_ID, LOGIN_LOGO_URL, 'login_logo_datauri');
-}
-
-/**
- * DEBUG: jalankan fungsi ini langsung dari editor Apps Script (pilih debugLogo > Run),
- * lalu lihat menu "Execution log" untuk hasilnya. Beri tahu saya isi log-nya.
- */
-function debugLogo() {
-  const ids = { dashboard: LOGO_FILE_ID, login: LOGIN_LOGO_FILE_ID };
-  const result = {};
-
-  Object.keys(ids).forEach(function (key) {
-    const fileId = ids[key];
-    const info = { fileId: fileId };
-
-    // Metode 1: DriveApp
-    try {
-      const blob = DriveApp.getFileById(fileId).getBlob();
-      info.driveApp = { ok: true, contentType: blob.getContentType(), sizeKB: Math.round(blob.getBytes().length / 1024) };
-    } catch (e) {
-      info.driveApp = { ok: false, error: e.message };
-    }
-
-    // Metode 2: URL publik (lh3)
-    try {
-      const resp = UrlFetchApp.fetch('https://lh3.googleusercontent.com/d/' + fileId, { muteHttpExceptions: true });
-      info.urlFetch = { ok: resp.getResponseCode() === 200, code: resp.getResponseCode(), contentType: resp.getHeaders()['Content-Type'] || resp.getHeaders()['content-type'] };
-    } catch (e) {
-      info.urlFetch = { ok: false, error: e.message };
-    }
-
-    result[key] = info;
-  });
-
-  // bersihkan cache supaya logo dibaca ulang setelah perbaikan
-  try {
-    CacheService.getScriptCache().removeAll(['logo_datauri', 'login_logo_datauri']);
-  } catch (e) {}
-
-  Logger.log(JSON.stringify(result, null, 2));
-  return result;
-}
+// Tempel link gambar LANGSUNG di sini (mis. https://situs.com/logo.png).
+// Gunakan URL gambar publik (BUKAN link Google Drive). Kosongkan ('') untuk menyembunyikan.
+const LOGO_URL = 'https://lh3.googleusercontent.com/d/1TKHbkFxSglOrqsWhOFfN9Xqa_-BiBIw7';        // logo Dashboard
+const LOGIN_LOGO_URL = 'https://lh3.googleusercontent.com/d/1ZMcyX0VA5Og0GaDDWGKaW5Bv9FhrDUee'; // logo Login
 
 /* ============ ROUTING ============ */
 
@@ -134,7 +44,7 @@ function doGet(e) {
 function serveLogin(notice) {
   const template = HtmlService.createTemplateFromFile('Login');
   template.notice = notice || '';
-  template.logoUrl = getLoginLogoSrc();
+  template.logoUrl = LOGIN_LOGO_URL;
   return template.evaluate()
     .setTitle('Login - Dashboard')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
@@ -146,7 +56,7 @@ function serveDashboard(session, token) {
   template.userData = session;
   template.menus = getMenusForRole(session.role);
   template.token = token;
-  template.logoUrl = getLogoSrc();
+  template.logoUrl = LOGO_URL;
 
   return template.evaluate()
     .setTitle('Dashboard')
