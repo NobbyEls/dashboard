@@ -26,19 +26,33 @@ const LOGIN_LOGO_URL = '';
 /** Helper: ambil gambar dari Drive sebagai data URI (dengan cache). */
 function driveImageSrc(fileId, fallbackUrl, cacheKey) {
   if (fileId) {
+    const cache = CacheService.getScriptCache();
+    const cached = cache.get(cacheKey);
+    if (cached) return cached;
+
+    let dataUri = null;
+
+    // 1) Coba via DriveApp (file milik / di-share ke akun yang menjalankan script)
     try {
-      const cache = CacheService.getScriptCache();
-      const cached = cache.get(cacheKey);
-      if (cached) return cached;
-
       const blob = DriveApp.getFileById(fileId).getBlob();
-      const dataUri = 'data:' + blob.getContentType() + ';base64,' +
-        Utilities.base64Encode(blob.getBytes());
+      dataUri = 'data:' + blob.getContentType() + ';base64,' + Utilities.base64Encode(blob.getBytes());
+    } catch (e1) {
+      // 2) Fallback: ambil via URL publik (file harus "Anyone with the link")
+      try {
+        const resp = UrlFetchApp.fetch('https://lh3.googleusercontent.com/d/' + fileId,
+          { muteHttpExceptions: true });
+        if (resp.getResponseCode() === 200) {
+          const blob = resp.getBlob();
+          dataUri = 'data:' + blob.getContentType() + ';base64,' + Utilities.base64Encode(blob.getBytes());
+        }
+      } catch (e2) {
+        // gagal juga -> fallbackUrl
+      }
+    }
 
+    if (dataUri) {
       if (dataUri.length < 95000) cache.put(cacheKey, dataUri, 21600);
       return dataUri;
-    } catch (e) {
-      // gagal baca Drive -> jatuh ke fallbackUrl
     }
   }
   return fallbackUrl;
@@ -63,21 +77,23 @@ function debugLogo() {
   Object.keys(ids).forEach(function (key) {
     const fileId = ids[key];
     const info = { fileId: fileId };
+
+    // Metode 1: DriveApp
     try {
-      const file = DriveApp.getFileById(fileId);
-      const blob = file.getBlob();
-      const bytes = blob.getBytes();
-      const dataUri = 'data:' + blob.getContentType() + ';base64,' + Utilities.base64Encode(bytes);
-      info.name = file.getName();
-      info.contentType = blob.getContentType();
-      info.sizeKB = Math.round(bytes.length / 1024);
-      info.dataUriLength = dataUri.length;
-      info.cached = dataUri.length < 95000;
-      info.ok = true;
+      const blob = DriveApp.getFileById(fileId).getBlob();
+      info.driveApp = { ok: true, contentType: blob.getContentType(), sizeKB: Math.round(blob.getBytes().length / 1024) };
     } catch (e) {
-      info.ok = false;
-      info.error = e.message;
+      info.driveApp = { ok: false, error: e.message };
     }
+
+    // Metode 2: URL publik (lh3)
+    try {
+      const resp = UrlFetchApp.fetch('https://lh3.googleusercontent.com/d/' + fileId, { muteHttpExceptions: true });
+      info.urlFetch = { ok: resp.getResponseCode() === 200, code: resp.getResponseCode(), contentType: resp.getHeaders()['Content-Type'] || resp.getHeaders()['content-type'] };
+    } catch (e) {
+      info.urlFetch = { ok: false, error: e.message };
+    }
+
     result[key] = info;
   });
 
