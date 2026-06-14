@@ -13,8 +13,8 @@ const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 jam
 // ===== LOGO =====
 // Tempel link gambar LANGSUNG di sini (mis. https://situs.com/logo.png).
 // Gunakan URL gambar publik (BUKAN link Google Drive). Kosongkan ('') untuk menyembunyikan.
-const LOGO_URL = 'https://lh3.googleusercontent.com/d/1TKHbkFxSglOrqsWhOFfN9Xqa_-BiBIw7';        // logo Dashboard
-const LOGIN_LOGO_URL = 'https://lh3.googleusercontent.com/d/1ZMcyX0VA5Og0GaDDWGKaW5Bv9FhrDUee'; // logo Login
+const LOGO_URL = 'https://els.id/wp-content/uploads/2023/08/ELS-ID-oren-1024x316.png';        // logo Dashboard
+const LOGIN_LOGO_URL = 'https://i.ibb.co.com/bjtDdtMQ/Logo.png'; // logo Login
 
 /* ============ ROUTING ============ */
 
