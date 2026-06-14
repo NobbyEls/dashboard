@@ -160,6 +160,7 @@
       <? if (userData.role === 'Admin') { ?>
         <button class="btn-admin-panel" onclick="openAdminPanel()">Kelola Akses</button>
       <? } ?>
+      <button class="btn-logout" onclick="openPasswordModal()">Ganti Password</button>
       <button class="btn-logout" onclick="doLogout()">Keluar</button>
     </div>
   </div>
@@ -227,6 +228,23 @@
   </div>
   <? } ?>
 
+  <div class="modal-overlay" id="passwordModal">
+    <div class="modal-box" style="max-width: 420px;">
+      <h2>Ganti Password</h2>
+      <div class="form-row">
+        <input type="password" id="oldPass" class="full-width" placeholder="Password lama">
+      </div>
+      <div class="form-row">
+        <input type="password" id="newPass" class="full-width" placeholder="Password baru">
+      </div>
+      <div class="form-row">
+        <input type="password" id="confirmPass" class="full-width" placeholder="Ulangi password baru">
+      </div>
+      <button class="btn-add" id="btnChangePass" onclick="submitChangePassword()">Simpan Password</button>
+      <button class="btn-close-modal" onclick="closePasswordModal()">Tutup</button>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
@@ -259,6 +277,49 @@
 
     function closeAdminPanel() {
       document.getElementById('adminModal').classList.remove('active');
+    }
+
+    function openPasswordModal() {
+      document.getElementById('oldPass').value = '';
+      document.getElementById('newPass').value = '';
+      document.getElementById('confirmPass').value = '';
+      document.getElementById('passwordModal').classList.add('active');
+    }
+
+    function closePasswordModal() {
+      document.getElementById('passwordModal').classList.remove('active');
+    }
+
+    function submitChangePassword() {
+      var oldPass = document.getElementById('oldPass').value;
+      var newPass = document.getElementById('newPass').value;
+      var confirmPass = document.getElementById('confirmPass').value;
+
+      if (!oldPass || !newPass || !confirmPass) { showToast('Lengkapi semua field'); return; }
+      if (newPass !== confirmPass) { showToast('Konfirmasi password tidak cocok'); return; }
+      if (newPass.length < 4) { showToast('Password baru minimal 4 karakter'); return; }
+
+      var btn = document.getElementById('btnChangePass');
+      btn.disabled = true;
+      btn.textContent = 'Menyimpan...';
+
+      google.script.run
+        .withSuccessHandler(function (res) {
+          btn.disabled = false;
+          btn.textContent = 'Simpan Password';
+          if (res.success) {
+            showToast('Password berhasil diganti');
+            closePasswordModal();
+          } else {
+            showToast(res.message || 'Gagal mengganti password');
+          }
+        })
+        .withFailureHandler(function (err) {
+          btn.disabled = false;
+          btn.textContent = 'Simpan Password';
+          showToast('Gagal: ' + err.message);
+        })
+        .changePassword(getToken(), oldPass, newPass);
     }
 
     function loadAccessList() {

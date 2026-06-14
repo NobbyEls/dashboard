@@ -122,6 +122,31 @@ function logout(token) {
   return { success: true };
 }
 
+/** Ganti password user yang sedang login. */
+function changePassword(token, oldPassword, newPassword) {
+  const session = validateSession(token);
+  if (!session) return { success: false, message: 'Session tidak valid, silakan login ulang' };
+  if (!oldPassword || !newPassword) return { success: false, message: 'Password lama & baru wajib diisi' };
+  if (String(newPassword).trim().length < 4) return { success: false, message: 'Password baru minimal 4 karakter' };
+
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName('Users');
+  if (!sheet) return { success: false, message: 'Sheet "Users" tidak ditemukan' };
+
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    if (String(row[0]).trim() === session.username) {
+      if (String(row[1]).trim() !== String(oldPassword).trim()) {
+        return { success: false, message: 'Password lama salah' };
+      }
+      sheet.getRange(i + 1, 2).setValue(String(newPassword).trim()); // kolom B = password
+      return { success: true };
+    }
+  }
+  return { success: false, message: 'User tidak ditemukan' };
+}
+
 function generateToken() {
   return Utilities.getUuid();
 }
