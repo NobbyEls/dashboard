@@ -10,33 +10,46 @@
 const SHEET_ID = '11kal0trMILl7jmmQwuboFU9adr634ljIGvdAvDCx4a8';
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 jam
 
-// Logo yang tampil di tengah dashboard.
-// Opsi 1 (PALING ANDAL): isi LOGO_FILE_ID dengan ID file logo di Google Drive.
-//   Server akan membaca file & menampilkannya langsung (jalan walau file privat).
-// Opsi 2: kosongkan LOGO_FILE_ID dan isi LOGO_URL dengan link gambar publik.
-// Kosongkan keduanya ('') untuk menyembunyikan logo.
+// ===== LOGO =====
+// Logo dibaca langsung dari Google Drive oleh server (jalan walau file privat).
+// Isi *_FILE_ID dengan ID file di Drive. Sebagai cadangan bisa pakai *_URL (link publik).
+// Kosongkan ('') untuk menyembunyikan logo.
+
+// Logo di tengah Dashboard
 const LOGO_FILE_ID = '1TKHbkFxSglOrqsWhOFfN9Xqa_-BiBIw7';
 const LOGO_URL = '';
 
-/** Mengembalikan sumber gambar logo untuk dipakai di <img src>. */
-function getLogoSrc() {
-  if (LOGO_FILE_ID) {
+// Logo di halaman Login
+const LOGIN_LOGO_FILE_ID = '1ZMcyX0VA5Og0GaDDWGKaW5Bv9FhrDUee';
+const LOGIN_LOGO_URL = '';
+
+/** Helper: ambil gambar dari Drive sebagai data URI (dengan cache). */
+function driveImageSrc(fileId, fallbackUrl, cacheKey) {
+  if (fileId) {
     try {
       const cache = CacheService.getScriptCache();
-      const cached = cache.get('logo_datauri');
+      const cached = cache.get(cacheKey);
       if (cached) return cached;
 
-      const blob = DriveApp.getFileById(LOGO_FILE_ID).getBlob();
+      const blob = DriveApp.getFileById(fileId).getBlob();
       const dataUri = 'data:' + blob.getContentType() + ';base64,' +
         Utilities.base64Encode(blob.getBytes());
 
-      if (dataUri.length < 95000) cache.put('logo_datauri', dataUri, 21600);
+      if (dataUri.length < 95000) cache.put(cacheKey, dataUri, 21600);
       return dataUri;
     } catch (e) {
-      // gagal baca Drive -> jatuh ke LOGO_URL di bawah
+      // gagal baca Drive -> jatuh ke fallbackUrl
     }
   }
-  return LOGO_URL;
+  return fallbackUrl;
+}
+
+function getLogoSrc() {
+  return driveImageSrc(LOGO_FILE_ID, LOGO_URL, 'logo_datauri');
+}
+
+function getLoginLogoSrc() {
+  return driveImageSrc(LOGIN_LOGO_FILE_ID, LOGIN_LOGO_URL, 'login_logo_datauri');
 }
 
 /* ============ ROUTING ============ */
@@ -67,6 +80,7 @@ function doGet(e) {
 function serveLogin(notice) {
   const template = HtmlService.createTemplateFromFile('Login');
   template.notice = notice || '';
+  template.logoUrl = getLoginLogoSrc();
   return template.evaluate()
     .setTitle('Login - Dashboard')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)

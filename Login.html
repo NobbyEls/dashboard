@@ -40,6 +40,10 @@
       justify-content: center; font-size: 28px; border: 1px solid rgba(255, 255, 255, 0.3);
       color: #fff; font-weight: bold;
     }
+    .login-logo {
+      display: block; margin: 0 auto 20px; max-height: 90px; max-width: 220px;
+      object-fit: contain; filter: drop-shadow(0 6px 18px rgba(0,0,0,0.25));
+    }
     .login-card h1 { text-align: center; color: #fff; font-size: 26px; font-weight: 600; margin-bottom: 6px; }
     .login-card .subtitle { text-align: center; color: rgba(255,255,255,0.75); font-size: 14px; margin-bottom: 30px; }
     .input-group { margin-bottom: 18px; }
@@ -77,7 +81,11 @@
   <div class="blob blob3"></div>
 
   <div class="login-card">
-    <div class="logo-circle">DB</div>
+    <? if (logoUrl) { ?>
+      <img class="login-logo" src="<?= logoUrl ?>" alt="Logo">
+    <? } else { ?>
+      <div class="logo-circle">DB</div>
+    <? } ?>
     <h1>Welcome Back</h1>
     <p class="subtitle">Login untuk mengakses dashboard</p>
 
