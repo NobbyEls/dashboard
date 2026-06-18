@@ -76,12 +76,6 @@
     .menu-icon img { width: 52px; height: 52px; object-fit: contain; }
     .menu-icon i { font-size: 42px; }
     .menu-card h3 { color: #fff; font-size: 17px; font-weight: 600; }
-    .install-hint {
-      margin-top: auto; padding: 6px 14px; border-radius: 50px;
-      background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
-      color: rgba(255,255,255,0.7); font-size: 11px; cursor: pointer;
-    }
-    .install-hint:hover { background: rgba(255,255,255,0.25); color: #fff; }
     .menu-card .menu-arrow { margin-top: auto; align-self: flex-end; color: rgba(255,255,255,0.6); font-size: 20px; }
     .empty-state { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.7); }
     .modal-overlay {
@@ -220,9 +214,6 @@
               <? } ?>
             </div>
             <h3><?= menus[i].label ?></h3>
-            <div class="install-hint" onclick="event.stopPropagation(); showInstallGuide('<?= menus[i].label ?>', '<?= menus[i].url ?>');">
-              <i class="fa-solid fa-download"></i> Install
-            </div>
           </a>
         <? } ?>
       </div>
@@ -289,37 +280,6 @@
     </div>
   </div>
   <? } ?>
-
-  <div class="modal-overlay" id="installModal">
-    <div class="modal-box" style="max-width: 480px;">
-      <h2 style="font-size: 18px;">Install sebagai Aplikasi</h2>
-      <p id="installAppName" style="color: rgba(255,255,255,0.8); font-size: 14px; margin-bottom: 18px;"></p>
-      <div style="color: rgba(255,255,255,0.9); font-size: 13px; line-height: 1.9;">
-        <p style="font-weight: 600; margin-bottom: 10px;">Desktop (PC/Laptop) - Chrome:</p>
-        <ol style="padding-left: 18px; margin-bottom: 20px;">
-          <li>Buka link di Chrome</li>
-          <li>Klik ikon <b>&#8942;</b> (titik tiga) di kanan atas</li>
-          <li>Pilih <b>"Install app"</b> atau <b>"Create shortcut"</b></li>
-          <li>Centang <b>"Open as window"</b> lalu klik Create</li>
-        </ol>
-        <p style="font-weight: 600; margin-bottom: 10px;">Android - Chrome:</p>
-        <ol style="padding-left: 18px; margin-bottom: 20px;">
-          <li>Buka link di Chrome</li>
-          <li>Tap <b>&#8942;</b> (menu) di kanan atas</li>
-          <li>Pilih <b>"Add to Home screen"</b></li>
-          <li>Tap <b>Add</b></li>
-        </ol>
-        <p style="font-weight: 600; margin-bottom: 10px;">iPhone/iPad - Safari:</p>
-        <ol style="padding-left: 18px; margin-bottom: 14px;">
-          <li>Buka link di Safari</li>
-          <li>Tap tombol <b>Share</b> (kotak + panah atas)</li>
-          <li>Scroll ke bawah, pilih <b>"Add to Home Screen"</b></li>
-        </ol>
-      </div>
-      <button class="btn-add" id="btnCopyUrl" onclick="copyInstallUrl()">Copy Link</button>
-      <button class="btn-close-modal" onclick="document.getElementById('installModal').classList.remove('active')">Tutup</button>
-    </div>
-  </div>
 
   <div class="toast" id="toast"></div>
 
@@ -398,39 +358,13 @@
         .changePassword(getToken(), oldPass, newPass);
     }
 
-    /* ======= OPEN MENU (LOG + CHROME APP MODE) ======= */
-
-    var currentInstallUrl = '';
+    /* ======= OPEN MENU (LOG) ======= */
 
     function openMenu(label, url) {
       // Log klik menu ke server (async, tidak blocking)
       google.script.run.logMenuClick(getToken(), label, url);
-
       // Buka di tab baru
       window.open(url, '_blank');
-    }
-
-    function showInstallGuide(label, url) {
-      currentInstallUrl = url;
-      document.getElementById('installAppName').textContent = '"' + label + '"';
-      document.getElementById('installModal').classList.add('active');
-    }
-
-    function copyInstallUrl() {
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(currentInstallUrl).then(function () {
-          showToast('Link disalin! Buka di Chrome lalu install.');
-        });
-      } else {
-        // fallback
-        var ta = document.createElement('textarea');
-        ta.value = currentInstallUrl;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        showToast('Link disalin! Buka di Chrome lalu install.');
-      }
     }
 
     /* ======= LOG AKTIVITAS (ADMIN) ======= */
