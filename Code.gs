@@ -108,6 +108,10 @@ function login(username, password) {
         nama: nama,
         loginTime: Date.now()
       });
+
+      // Catat log login
+      writeLog(sheetUser, nama, role, 'Login', '-');
+
       return { success: true, token: token, role: role, nama: nama };
     }
   }
@@ -277,4 +281,56 @@ function deleteMenu(token, rowIndex) {
   const ss = SpreadsheetApp.openById(SHEET_ID);
   ss.getSheetByName('Menus').deleteRow(rowIndex);
   return { success: true };
+}
+
+/* ============ ACTIVITY LOG ============ */
+/**
+ * Sheet "Log": timestamp | username | nama | role | aksi | detail
+ * Buat sheet "Log" secara manual atau biarkan otomatis dibuat oleh fungsi ini.
+ */
+
+function writeLog(username, nama, role, aksi, detail) {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  let sheet = ss.getSheetByName('Log');
+  if (!sheet) {
+    sheet = ss.insertSheet('Log');
+    sheet.appendRow(['Timestamp', 'Username', 'Nama', 'Role', 'Aksi', 'Detail']);
+    sheet.getRange(1, 1, 1, 6).setFontWeight('bold');
+  }
+  const tz = Session.getScriptTimeZone() || 'Asia/Jakarta';
+  const ts = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm:ss');
+  sheet.appendRow([ts, username, nama, role, aksi, detail]);
+}
+
+/** Dipanggil dari Dashboard ketika user klik menu. */
+function logMenuClick(token, menuLabel, menuUrl) {
+  const session = validateSession(token);
+  if (!session) return { success: false };
+  writeLog(session.username, session.nama, session.role, 'Buka Menu', menuLabel + ' (' + menuUrl + ')');
+  return { success: true };
+}
+
+/** Admin: ambil log aktivitas terbaru (max 200 baris). */
+function getActivityLog(token) {
+  if (!requireAdmin(token)) return { success: false, message: 'Akses ditolak' };
+
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName('Log');
+  if (!sheet) return { success: true, logs: [] };
+
+  const data = sheet.getDataRange().getValues();
+  const logs = [];
+  const start = Math.max(1, data.length - 200); // 200 baris terakhir
+  for (let i = data.length - 1; i >= start; i--) {
+    const row = data[i];
+    logs.push({
+      timestamp: String(row[0]),
+      username: String(row[1]),
+      nama: String(row[2]),
+      role: String(row[3]),
+      aksi: String(row[4]),
+      detail: String(row[5] || '')
+    });
+  }
+  return { success: true, logs: logs };
 }

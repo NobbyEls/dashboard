@@ -182,6 +182,7 @@
       </div>
       <? if (userData.role === 'Admin') { ?>
         <button class="btn-admin-panel" onclick="openAdminPanel()">Kelola Akses</button>
+        <button class="btn-admin-panel" onclick="openLogPanel()">Log Aktivitas</button>
       <? } ?>
       <button class="btn-logout" onclick="openPasswordModal()">Ganti Password</button>
       <button class="btn-logout" onclick="doLogout()">Keluar</button>
@@ -201,7 +202,7 @@
     <? if (menus.length > 0) { ?>
       <div class="menu-grid">
         <? for (var i = 0; i < menus.length; i++) { ?>
-          <a class="menu-card" href="<?= menus[i].url ?>" target="_blank">
+          <a class="menu-card" href="#" onclick="openMenu('<?= menus[i].label ?>', '<?= menus[i].url ?>'); return false;">
             <? var ic = String(menus[i].icon || '').trim(); ?>
             <div class="menu-icon">
               <? if (ic.indexOf('http') === 0) { ?>
@@ -267,6 +268,18 @@
       <button class="btn-close-modal" onclick="closePasswordModal()">Tutup</button>
     </div>
   </div>
+
+  <? if (userData.role === 'Admin') { ?>
+  <div class="modal-overlay" id="logModal">
+    <div class="modal-box" style="max-width: 780px;">
+      <h2>Log Aktivitas</h2>
+      <div id="logList" style="max-height: 55vh; overflow-y: auto;">
+        <p style="color: rgba(255,255,255,0.7); font-size: 13px;">Memuat...</p>
+      </div>
+      <button class="btn-close-modal" onclick="closeLogPanel()">Tutup</button>
+    </div>
+  </div>
+  <? } ?>
 
   <div class="toast" id="toast"></div>
 
@@ -343,6 +356,70 @@
           showToast('Gagal: ' + err.message);
         })
         .changePassword(getToken(), oldPass, newPass);
+    }
+
+    /* ======= OPEN MENU (LOG + CHROME APP MODE) ======= */
+
+    function openMenu(label, url) {
+      // Log klik menu ke server (async, tidak blocking)
+      google.script.run.logMenuClick(getToken(), label, url);
+
+      // Buka link sebagai Chrome App (Android: intent, iOS/desktop: window.open)
+      var chromeIntent = 'intent://' + url.replace(/^https?:\/\//, '') +
+        '#Intent;scheme=https;package=com.android.chrome;end';
+
+      var ua = navigator.userAgent || '';
+      if (/android/i.test(ua)) {
+        // Android: buka di Chrome App (bukan webview/in-app browser)
+        window.top.location.href = chromeIntent;
+      } else {
+        // iOS / Desktop: buka di tab baru
+        window.open(url, '_blank');
+      }
+    }
+
+    /* ======= LOG AKTIVITAS (ADMIN) ======= */
+
+    function openLogPanel() {
+      document.getElementById('logModal').classList.add('active');
+      loadLogData();
+    }
+
+    function closeLogPanel() {
+      document.getElementById('logModal').classList.remove('active');
+    }
+
+    function loadLogData() {
+      google.script.run
+        .withSuccessHandler(renderLogData)
+        .withFailureHandler(function (err) { showToast('Gagal memuat log: ' + err.message); })
+        .getActivityLog(getToken());
+    }
+
+    function renderLogData(result) {
+      var container = document.getElementById('logList');
+      if (!result.success) { container.innerHTML = '<p style="color:#fff;">' + result.message + '</p>'; return; }
+      if (result.logs.length === 0) { container.innerHTML = '<p style="color:rgba(255,255,255,0.7);font-size:13px;">Belum ada log.</p>'; return; }
+
+      var html = '<table style="width:100%;border-collapse:collapse;font-size:12px;color:#fff;">';
+      html += '<thead><tr style="text-align:left;border-bottom:1px solid rgba(255,255,255,0.2);">';
+      html += '<th style="padding:8px 6px;">Waktu</th>';
+      html += '<th style="padding:8px 6px;">User</th>';
+      html += '<th style="padding:8px 6px;">Aksi</th>';
+      html += '<th style="padding:8px 6px;">Detail</th>';
+      html += '</tr></thead><tbody>';
+
+      result.logs.forEach(function (log) {
+        html += '<tr style="border-bottom:1px solid rgba(255,255,255,0.08);">';
+        html += '<td style="padding:7px 6px;white-space:nowrap;">' + log.timestamp + '</td>';
+        html += '<td style="padding:7px 6px;">' + log.nama + '<br><span style="opacity:0.6;font-size:11px;">' + log.role + '</span></td>';
+        html += '<td style="padding:7px 6px;">' + log.aksi + '</td>';
+        html += '<td style="padding:7px 6px;word-break:break-word;">' + log.detail + '</td>';
+        html += '</tr>';
+      });
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
     }
 
     function loadAccessList() {
